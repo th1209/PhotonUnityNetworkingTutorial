@@ -19,6 +19,14 @@ namespace Com.Th1209.PunTutorial
         [SerializeField]
         private byte maxPlayersPerRoom = 4;
 
+        [Tooltip("The Ui Panel to let the user enter name, connect and play")]
+        [SerializeField]
+        private GameObject controlPanel = null;
+        
+        [Tooltip("The UI Label to inform the user that the connection is in progress")]
+        [SerializeField]
+        private GameObject progressLabel = null;
+
         /// <summary>
         /// ゲームバージョン毎に､接続は切り分けられる.
         /// </summary>
@@ -38,7 +46,11 @@ namespace Com.Th1209.PunTutorial
 
         void Start()
         {
-            Connect();
+            Debug.Assert(controlPanel  != null);
+            Debug.Assert(progressLabel != null);
+
+            progressLabel.SetActive(false);
+            controlPanel.SetActive(true);
         }
 
         #endregion
@@ -48,6 +60,9 @@ namespace Com.Th1209.PunTutorial
 
         public void Connect()
         {
+            progressLabel.SetActive(true);
+            controlPanel.SetActive(false);
+
             if (PhotonNetwork.IsConnected) {
                 // ランダムにルームへの参加を試みる.
                 // 失敗した場合は､OnJoinRandomFailed()が呼び出される.
@@ -71,6 +86,8 @@ namespace Com.Th1209.PunTutorial
 
         public override void OnDisconnected(DisconnectCause cause)
         {
+            progressLabel.SetActive(false);
+            controlPanel.SetActive(true);
             Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
         }
 
