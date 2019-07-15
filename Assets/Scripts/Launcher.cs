@@ -6,7 +6,6 @@ using Photon.Realtime;
 
 namespace Com.Th1209.PunTutorial
 {
-    // public class Launcher : MonoBehaviour
     public class Launcher : MonoBehaviourPunCallbacks
     {
         #region Private Serializable Fields
