@@ -50,7 +50,6 @@ namespace Com.Th1209.PunTutorial
                     return;
                 }
 
-                Debug.LogFormat("Set Name {0}", value);
                 PlayerPrefs.SetString(playerNamePrefKey, value);
                 PhotonNetwork.NickName = value;
         }

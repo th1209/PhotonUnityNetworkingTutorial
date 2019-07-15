@@ -31,6 +31,11 @@ namespace Com.Th1209.PunTutorial
         /// </summary>
         string gameVersion = "1";
 
+        /// <summary>
+        /// 明示的にゲームサーバへの接続を試みていることを示すフラグ.
+        /// </summary>
+        bool isConnecting = false;
+
         #endregion
 
 
@@ -59,6 +64,8 @@ namespace Com.Th1209.PunTutorial
 
         public void Connect()
         {
+            isConnecting = true;
+
             progressLabel.SetActive(true);
             controlPanel.SetActive(false);
 
@@ -81,6 +88,12 @@ namespace Com.Th1209.PunTutorial
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
+
+            if (isConnecting) {
+                // isConnectingフラグをチェックして､ゲームサーバに接続する.
+                // ※ ゲームサーバからの接続が解除された時､OnConnectToMaster()メソッドがコールされてしまう.
+                PhotonNetwork.JoinRandomRoom();
+            }
         }
 
         public override void OnDisconnected(DisconnectCause cause)
@@ -102,6 +115,12 @@ namespace Com.Th1209.PunTutorial
         public override void OnJoinedRoom()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
+
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 1) {
+                Debug.Log("We load the 'Room for 1' ");
+
+                PhotonNetwork.LoadLevel("Room for 1");
+            }
         }
 
         #endregion
