@@ -23,6 +23,17 @@ namespace Com.Th1209.PunTutorial
         #endregion
 
 
+        #region Public Fields
+
+        /// <summary>
+        /// HP.
+        /// </summary>
+        [Tooltip("The current Health of our player")]
+        public float Health = 1.0f;
+
+        #endregion
+
+
         #region Private Fields
 
         /// <summary>
@@ -49,6 +60,34 @@ namespace Com.Th1209.PunTutorial
                 // ビームのアクティブを切り替える.
                 beams.SetActive(isFiring);
             }
+
+            if (Health <= 0.0f) {
+                GameManager.Instance.LeaveRoom();
+            }
+        }
+
+        void OnTriggerEnter(Collider other)
+        {
+            if (! photonView.IsMine) {
+                return;
+            }
+
+            if (! other.name.Contains("Beam")) {
+                return;
+            }
+            Health -= 0.1f;
+        }
+
+        void OnTriggerStay(Collider other)
+        {
+            if (! photonView.IsMine) {
+                return;
+            }
+
+            if (! other.name.Contains("Beam")) {
+                return;
+            }
+            Health -= 0.1f * Time.deltaTime;
         }
 
         #endregion
