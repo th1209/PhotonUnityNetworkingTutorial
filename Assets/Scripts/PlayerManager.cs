@@ -8,8 +8,11 @@ using Photon.Realtime;
 
 namespace Com.Th1209.PunTutorial
 {
+    // サンプルのCameraWorkクラスを利用する.
+    using Photon.Pun.Demo.PunBasics;
+
     [RequireComponent(typeof(Animator))]
-    public class PlayerManager : MonoBehaviourPunCallbacks
+    public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         #region Private Serializable Fields
 
@@ -52,9 +55,20 @@ namespace Com.Th1209.PunTutorial
             beams.SetActive(false);
         }
 
+        void Start()
+        {
+            CameraWork _cameraWork = this.gameObject.GetComponent<CameraWork>();
+            Debug.Assert(_cameraWork != null);
+            if (photonView.IsMine) {
+                _cameraWork.OnStartFollowing();
+            }
+        }
+
         void Update()
         {
-            ProcessInputs();
+            if (photonView.IsMine) {
+                ProcessInputs();
+            }
 
             if (isFiring != beams.activeSelf) {
                 // ビームのアクティブを切り替える.
@@ -88,6 +102,31 @@ namespace Com.Th1209.PunTutorial
                 return;
             }
             Health -= 0.1f * Time.deltaTime;
+        }
+
+        #endregion
+
+
+        #region IPunObservable implementation
+
+        /// <summary>
+        /// Photonのデータ同期時に呼ばれる.
+        /// このメソッドを実装するだけでは不十分で､このコンポーネントをPhotonViewの監視対象に追加する必要がある点にも注意.
+        /// </summary>
+        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+        {
+            if (stream.IsWriting) {
+                // 自分のデータを､他のクライアントに渡す.
+                // 自クライアントのインスタンスの場合にのみ､書き出しが行われる仕様である点に注目.
+                // そのため､他クライアントのインスタンスの値も､書き出してしまう心配はしなくていい.
+                stream.SendNext(isFiring);
+                stream.SendNext(Health);
+            } else {
+                // 他クライアントのデータを受け取る.
+                // object型が返るので､明示的なキャストが必要な点に注意.
+                this.isFiring = (bool)stream.ReceiveNext();
+                this.Health = (float)stream.ReceiveNext();
+            }
         }
 
         #endregion

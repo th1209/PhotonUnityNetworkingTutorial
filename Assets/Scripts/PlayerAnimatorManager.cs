@@ -9,7 +9,7 @@ using Photon.Realtime;
 namespace Com.Th1209.PunTutorial
 {
     [RequireComponent(typeof(Animator))]
-    public class PlayerAnimatorManager : MonoBehaviourPunCallbacks
+    public class PlayerAnimatorManager : MonoBehaviourPun
     {
         #region Private Serializable Fields
 
@@ -41,6 +41,10 @@ namespace Com.Th1209.PunTutorial
         void Update()
         {
             if (! animator) {
+                return;
+            }
+
+            if (photonView.IsMine == false && PhotonNetwork.IsConnected == true) {
                 return;
             }
 
