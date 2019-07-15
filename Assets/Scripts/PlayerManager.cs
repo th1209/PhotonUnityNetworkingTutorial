@@ -23,6 +23,10 @@ namespace Com.Th1209.PunTutorial
         [SerializeField]
         private GameObject beams;
 
+        [Tooltip("The Player's UI GameObject Prefab")]
+        [SerializeField]
+        private GameObject playerUiPrefab;
+
         #endregion
 
 
@@ -33,6 +37,9 @@ namespace Com.Th1209.PunTutorial
         /// </summary>
         [Tooltip("The current Health of our player")]
         public float Health = 1.0f;
+
+        [Tooltip("The local player instance. Use this to know if the local player is represented in the Scene")]
+        public static GameObject LocalPlayerInstance;
 
         #endregion
 
@@ -51,6 +58,13 @@ namespace Com.Th1209.PunTutorial
 
         void Awake()
         {
+            if(photonView.IsMine) {
+                PlayerManager.LocalPlayerInstance = this.gameObject;
+            }
+
+            // 人数変更によるシーン遷移時に破棄されないようにする.
+            DontDestroyOnLoad(this.gameObject);
+
             Debug.Assert(beams != null);
             beams.SetActive(false);
         }
@@ -62,6 +76,14 @@ namespace Com.Th1209.PunTutorial
             if (photonView.IsMine) {
                 _cameraWork.OnStartFollowing();
             }
+
+            Debug.Assert(playerUiPrefab != null);
+            GameObject _uiGo = Instantiate(playerUiPrefab);
+            _uiGo.SendMessage("SetTarget", this, SendMessageOptions.RequireReceiver);
+
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += (scene, loadingMode) => {
+                this.CalledOnLevelWasLoaded(scene.buildIndex);
+            };
         }
 
         void Update()
@@ -104,6 +126,19 @@ namespace Com.Th1209.PunTutorial
             Health -= 0.1f * Time.deltaTime;
         }
 
+        void CalledOnLevelWasLoaded(int level)
+        {
+            // UIの再生成.
+            GameObject _uiGo = Instantiate(playerUiPrefab);
+            _uiGo.SendMessage("SetTarget", this, SendMessageOptions.RequireReceiver);
+
+            if (! Physics.Raycast(transform.position, -Vector3.up, 5.0f)) {
+                // 人数が減少し､より小さいステージになった場合において､
+                // ステージの範囲外にいれば､中央に位置を変更する.
+                transform.position = new Vector3(0.0f, 5.0f, 0.0f);
+            }
+        }
+
         #endregion
 
 
@@ -144,9 +179,6 @@ namespace Com.Th1209.PunTutorial
 
             if (Input.GetButtonUp("Fire1")){
                 isFiring = false;
-                // if (isFiring) {
-                //     isFiring = false;
-                // }
             }
         }
 

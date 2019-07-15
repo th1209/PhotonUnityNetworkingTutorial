@@ -19,6 +19,9 @@ namespace Com.Th1209.PunTutorial
 
         public static GameManager Instance;
 
+        [Tooltip("The prefab to use for representing the player")]
+        public GameObject playerPrefab;
+
         #endregion
 
         #region Private Fields
@@ -30,6 +33,14 @@ namespace Com.Th1209.PunTutorial
         void Start()
         {
             Instance = this;
+
+            Debug.Assert(playerPrefab != null);
+
+            if (PlayerManager.LocalPlayerInstance == null) {
+                // ネットワーク越しに共有したいインスタンスは､PhotonのInstantiateを使う.
+                // ※ Resourcesフォルダにプレハブが格納される必要がある点に注意.
+                PhotonNetwork.Instantiate(this.playerPrefab.name, new Vector3(0.0f, 5.0f, 0.0f), Quaternion.identity, 0);
+            }
         }
 
         #endregion
